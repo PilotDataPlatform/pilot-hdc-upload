@@ -1,6 +1,4 @@
-FROM python:3.9-buster
-
-WORKDIR /usr/src/app
+FROM docker-registry.ebrains.eu/hdc-services-image/base-image:python-3.10.14-v1 AS upload-image
 
 ENV PYTHONDONTWRITEBYTECODE=true \
     PYTHONIOENCODING=UTF-8 \
@@ -18,8 +16,10 @@ RUN apt-get update && \
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
 COPY poetry.lock pyproject.toml ./
+COPY app ./app
 RUN poetry install --no-dev --no-root --no-interaction
-COPY . .
-RUN chmod +x gunicorn_starter.sh
 
-CMD ["./gunicorn_starter.sh"]
+RUN chown -R app:app /app
+USER app
+
+CMD ["python3", "-m", "app"]

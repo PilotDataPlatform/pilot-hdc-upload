@@ -1,6 +1,7 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
 import asyncio
@@ -12,6 +13,7 @@ from zipfile import ZipFile
 
 import pytest
 from async_asgi_testclient import TestClient as TestAsyncClient
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from httpx import Response
 from starlette.config import environ
@@ -54,6 +56,13 @@ def event_loop(request):
     asyncio.set_event_loop_policy(None)
 
 
+@pytest.fixture
+def app(event_loop) -> FastAPI:
+    from app.main import create_app
+
+    return create_app()
+
+
 @pytest.fixture(autouse=True)
 def mock_settings(monkeypatch):
     from app.config import ConfigClass
@@ -62,16 +71,12 @@ def mock_settings(monkeypatch):
 
 
 @pytest.fixture
-def test_client():
-    from run import app
-
+def test_client(app):
     return TestClient(app)
 
 
 @pytest.fixture
-def test_async_client():
-    from run import app
-
+def test_async_client(app):
     return TestAsyncClient(app)
 
 

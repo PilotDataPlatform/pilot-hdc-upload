@@ -1,26 +1,18 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
 import enum
 from functools import wraps
 
-from common import LoggerFactory
 from fastapi import HTTPException
 
-from app.config import ConfigClass
+from app.logger import logger
 from app.models.base_models import APIResponse
 from app.models.base_models import EAPIResponseCode
 from app.resources.decorator import HeaderMissingException
-
-_logger = LoggerFactory(
-    'internal_error',
-    level_default=ConfigClass.LEVEL_DEFAULT,
-    level_file=ConfigClass.LEVEL_FILE,
-    level_stdout=ConfigClass.LEVEL_STDOUT,
-    level_stderr=ConfigClass.LEVEL_STDERR,
-).get_logger()
 
 
 def catch_internal(api_namespace: str):
@@ -43,7 +35,7 @@ def catch_internal(api_namespace: str):
                 respon.code = EAPIResponseCode.internal_error
                 err = api_namespace + ' ' + exce.detail
                 err_msg = customized_error_template(ECustomizedError.INTERNAL) % err
-                _logger.error(err_msg)
+                logger.error(err_msg)
                 respon.error_msg = err_msg
                 return respon.json_response()
 
@@ -51,7 +43,7 @@ def catch_internal(api_namespace: str):
                 respon = APIResponse()
                 respon.code = EAPIResponseCode.bad_request
                 err_msg = str(e)
-                _logger.error(err_msg)
+                logger.error(err_msg)
                 respon.error_msg = err_msg
                 return respon.json_response()
 
@@ -60,7 +52,7 @@ def catch_internal(api_namespace: str):
                 respon.code = EAPIResponseCode.internal_error
                 err = api_namespace + ' ' + str(exce)
                 err_msg = customized_error_template(ECustomizedError.INTERNAL) % err
-                _logger.error(err_msg)
+                logger.error(err_msg)
                 respon.error_msg = err_msg
                 return respon.json_response()
 

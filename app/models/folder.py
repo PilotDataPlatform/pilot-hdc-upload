@@ -1,6 +1,7 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
 import json
@@ -8,20 +9,11 @@ import os
 import time
 import uuid
 
-from common import LoggerFactory
-
 from app.commons.data_providers.redis import SrvAioRedisSingleton
 from app.config import ConfigClass
+from app.logger import logger
 from app.models.models_item import ItemStatus
 from app.routers.v1.exceptions import InvalidPayload
-
-_file_mgr_logger = LoggerFactory(
-    'folder_manager',
-    level_default=ConfigClass.LEVEL_DEFAULT,
-    level_file=ConfigClass.LEVEL_FILE,
-    level_stdout=ConfigClass.LEVEL_STDOUT,
-    level_stderr=ConfigClass.LEVEL_STDERR,
-).get_logger()
 
 redis_srv = SrvAioRedisSingleton()
 
@@ -79,7 +71,7 @@ class FolderMgr:
                 node_chain.append(new_node)
                 self.last_node = new_node
 
-            _file_mgr_logger.info(f'Read From db cost {read_db_duration}')
+            logger.info(f'Read From db cost {read_db_duration}')
 
         except Exception:
             raise

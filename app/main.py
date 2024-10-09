@@ -1,8 +1,10 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
+from common import configure_logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
@@ -19,6 +21,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from app.api_registry import api_registry
 from app.config import ConfigClass
+from app.config import Settings
 from app.routers.exceptions import ServiceException
 
 
@@ -31,6 +34,8 @@ def create_app():
         docs_url='/v1/api-doc',
         version=ConfigClass.VERSION,
     )
+
+    setup_logging(ConfigClass)
 
     app.add_middleware(
         CORSMiddleware,
@@ -46,6 +51,12 @@ def create_app():
     instrument_app(app)
 
     return app
+
+
+def setup_logging(settings: Settings) -> None:
+    """Configure the application logging."""
+
+    configure_logging(settings.LOGGING_LEVEL, settings.LOGGING_FORMAT)
 
 
 def setup_exception_handlers(app: FastAPI) -> None:

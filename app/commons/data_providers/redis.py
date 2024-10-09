@@ -1,20 +1,14 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
 from aioredis import StrictRedis
-from common import LoggerFactory
 
 from app.config import ConfigClass
+from app.logger import logger
 
-_logger = LoggerFactory(
-    'SrvAioRedisSingleton',
-    level_default=ConfigClass.LEVEL_DEFAULT,
-    level_file=ConfigClass.LEVEL_FILE,
-    level_stdout=ConfigClass.LEVEL_STDOUT,
-    level_stderr=ConfigClass.LEVEL_STDERR,
-).get_logger()
 REDIS_INSTANCE = {}
 
 
@@ -37,7 +31,7 @@ class SrvAioRedisSingleton:
 
             REDIS_INSTANCE = StrictRedis(host=self.host, port=self.port, db=self.db, password=self.pwd)
             self.__instance = REDIS_INSTANCE
-            _logger.info('[SUCCEED] SrvAioRedisSingleton Connection initialized.')
+            logger.info('[SUCCEED] SrvAioRedisSingleton Connection initialized.')
 
     async def ping(self):
         return await self.__instance.ping()
@@ -63,7 +57,7 @@ class SrvAioRedisSingleton:
         return await self.__instance.delete(key)
 
     async def mdelete_by_prefix(self, prefix: str):
-        _logger.debug(prefix)
+        logger.debug(prefix)
         query = '{}:*'.format(prefix)
         keys = await self.__instance.keys(query)
         for key in keys:

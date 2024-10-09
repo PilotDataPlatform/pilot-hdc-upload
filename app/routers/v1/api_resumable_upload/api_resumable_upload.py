@@ -1,16 +1,17 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
 import asyncio
 
-from common import LoggerFactory
 from common.object_storage_adaptor.boto3_client import get_boto3_client
 from fastapi import APIRouter
 from fastapi_utils import cbv
 
 from app.config import ConfigClass
+from app.logger import logger
 from app.models.base_models import APIResponse
 from app.models.models_resumable_upload import ResumableUploadPOST
 from app.models.models_resumable_upload import ResumableUploadResponse
@@ -28,20 +29,12 @@ class APIResumableUpload:
     """
 
     def __init__(self):
-        self.__logger = LoggerFactory(
-            'api_data_upload',
-            level_default=ConfigClass.LEVEL_DEFAULT,
-            level_file=ConfigClass.LEVEL_FILE,
-            level_stdout=ConfigClass.LEVEL_STDOUT,
-            level_stderr=ConfigClass.LEVEL_STDERR,
-        ).get_logger()
-
         self.boto3_client = self._connect_to_object_storage()
 
     def _connect_to_object_storage(self):
         loop = asyncio.new_event_loop()
 
-        self.__logger.info('Initialize the boto3 client')
+        logger.info('Initialize the boto3 client')
         try:
             boto3_client = loop.run_until_complete(
                 get_boto3_client(
@@ -52,14 +45,11 @@ class APIResumableUpload:
                 )
             )
             boto3_client._config.max_pool_connections = 1000
-            self.__logger.warning(
-                f'temporary increase the boto3 connections to {boto3_client._config.max_pool_connections}'
-            )
+            logger.warning(f'temporary increase the boto3 connections to {boto3_client._config.max_pool_connections}')
 
-        except Exception as e:
-            error_msg = str(e)
-            self.__logger.error('Fail to create connection with boto3: %s', error_msg)
-            raise e
+        except Exception:
+            logger.exception('Fail to create connection with boto3')
+            raise
 
         loop.close()
         return boto3_client

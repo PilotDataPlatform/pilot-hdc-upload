@@ -1,22 +1,15 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
 import httpx
-from common import LoggerFactory
 
 from app.commons.data_providers.redis import SrvAioRedisSingleton
 from app.commons.kafka_producer import get_kafka_producer
 from app.config import ConfigClass
-
-logger = LoggerFactory(
-    'health_check_api',
-    level_default=ConfigClass.LEVEL_DEFAULT,
-    level_file=ConfigClass.LEVEL_FILE,
-    level_stdout=ConfigClass.LEVEL_STDOUT,
-    level_stderr=ConfigClass.LEVEL_STDERR,
-).get_logger()
+from app.logger import logger
 
 
 async def check_redis() -> dict:

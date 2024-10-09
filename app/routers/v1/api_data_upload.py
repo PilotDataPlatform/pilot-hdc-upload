@@ -1,6 +1,7 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
 import asyncio
@@ -13,7 +14,6 @@ from typing import Optional
 from uuid import uuid4
 
 import httpx
-from common import LoggerFactory
 from common import ProjectClient
 from common import ProjectNotFoundException
 from common.object_storage_adaptor.boto3_client import TokenError
@@ -32,6 +32,7 @@ from app.commons.data_providers.redis_project_session_job import SessionJob
 from app.commons.data_providers.redis_project_session_job import get_fsm_object
 from app.commons.kafka_producer import get_kafka_producer
 from app.config import ConfigClass
+from app.logger import logger
 from app.models.base_models import APIResponse
 from app.models.base_models import EAPIResponseCode
 from app.models.folder import FolderMgr
@@ -82,20 +83,13 @@ class APIUpload:
     """
 
     def __init__(self):
-        self.__logger = LoggerFactory(
-            'api_data_upload',
-            level_default=ConfigClass.LEVEL_DEFAULT,
-            level_file=ConfigClass.LEVEL_FILE,
-            level_stdout=ConfigClass.LEVEL_STDOUT,
-            level_stderr=ConfigClass.LEVEL_STDERR,
-        ).get_logger()
         self.project_client = ProjectClient(ConfigClass.PROJECT_SERVICE, ConfigClass.REDIS_URL)
         self.boto3_client, self.boto3_client_public = self._connect_to_object_storage()
 
     def _connect_to_object_storage(self):
         loop = asyncio.new_event_loop()
 
-        self.__logger.info('Initialize the boto3 client')
+        logger.info('Initialize the boto3 client')
         try:
             boto3_client = loop.run_until_complete(
                 get_boto3_client(
@@ -115,10 +109,9 @@ class APIUpload:
                 )
             )
 
-        except Exception as e:
-            error_msg = str(e)
-            self.__logger.error('Fail to create connection with boto3: %s', error_msg)
-            raise e
+        except Exception:
+            logger.exception('Fail to create connection with boto3')
+            raise
 
         loop.close()
         return boto3_client, boto3_client_public
@@ -173,7 +166,7 @@ class APIUpload:
         project_code = request_payload.project_code
         namespace = ConfigClass.namespace
 
-        self.__logger.info('Upload Job start')
+        logger.info('Upload Job start')
         if not (
             request_payload.job_type == EUploadJobType.AS_FILE.name
             or request_payload.job_type == EUploadJobType.AS_FOLDER.name
@@ -292,24 +285,24 @@ class APIUpload:
         resumable_filename = ud.normalize('NFC', resumable_filename)
         file_key = resumable_relative_path + '/' + resumable_filename
 
-        self.__logger.info('Uploading file %s chunk %s', resumable_filename, resumable_chunk_number)
+        logger.info('Uploading file %s chunk %s', resumable_filename, resumable_chunk_number)
         try:
             bucket = ('gr-' if ConfigClass.namespace == 'greenroom' else 'core-') + project_code
 
-            self.__logger.info('Start to read the chunks')
+            logger.info('Start to read the chunks')
             file_content = await chunk_data.read()
-            self.__logger.info('Chunk size is %s', len(file_content))
+            logger.info('Chunk size is %s', len(file_content))
             etag_info = await self.boto3_client.part_upload(
                 bucket, file_key, resumable_identifier, resumable_chunk_number, file_content
             )
 
-            self.__logger.info('finish the chunk upload: %s', json.dumps(etag_info))
+            logger.info('finish the chunk upload: %s', json.dumps(etag_info))
 
             _res.code = EAPIResponseCode.success
             _res.result = {'msg': 'Succeed'}
         except Exception as e:
             error_message = str(e)
-            self.__logger.error('Fail to upload chunks: %s', error_message)
+            logger.error('Fail to upload chunks: %s', error_message)
 
             status_mgr = await get_fsm_object(
                 session_id,
@@ -353,7 +346,7 @@ class APIUpload:
             res.result = presigned_url
         except Exception as e:
             error_message = str(e)
-            self.__logger.error('Fail to generate presigned url for chunks: %s', error_message)
+            logger.error('Fail to generate presigned url for chunks: %s', error_message)
             res.code = EAPIResponseCode.internal_error
             res.error_msg = error_message
 
@@ -399,7 +392,7 @@ class APIUpload:
 
         _res = APIResponse()
 
-        self.__logger.info(f'resumable_filename: {request_payload.resumable_filename}')
+        logger.info(f'resumable_filename: {request_payload.resumable_filename}')
         request_payload.resumable_filename = ud.normalize('NFC', request_payload.resumable_filename)
 
         status_mgr = await get_fsm_object(
@@ -415,13 +408,13 @@ class APIUpload:
 
         background_tasks.add_task(
             finalize_worker,
-            self.__logger,
+            logger,
             request_payload,
             status_mgr,
             self.boto3_client,
         )
 
-        self.__logger.info('finalize_worker started')
+        logger.info('finalize_worker started')
         job_recorded = await status_mgr.set_status(EFileStatus.CHUNK_UPLOADED)
         _res.code = EAPIResponseCode.success
         _res.result = job_recorded
@@ -456,16 +449,7 @@ async def folder_creation(
             will return folder node C
     """
 
-    __logger = LoggerFactory(
-        'api_data_upload',
-        level_default=ConfigClass.LEVEL_DEFAULT,
-        level_file=ConfigClass.LEVEL_FILE,
-        level_stdout=ConfigClass.LEVEL_STDOUT,
-        level_stderr=ConfigClass.LEVEL_STDERR,
-    ).get_logger()
     folder_create_duration = 0
-
-    __logger.info('test')
 
     folder_create_start_time = time.time()
     folder_mgr = FolderMgr(
@@ -482,7 +466,7 @@ async def folder_creation(
 
     folder_create_duration += time.time() - folder_create_start_time
 
-    __logger.info(f'Save to Cache Folder Time: {folder_create_duration}')
+    logger.info(f'Save to Cache Folder Time: {folder_create_duration}')
 
     batch_folder_create_start_time = time.time()
     try:
@@ -502,14 +486,14 @@ async def folder_creation(
         }
         to_create_items.append(data)
 
-        __logger.info(f'New Folders saved: {len(to_create_items)}')
-        __logger.info(f'New Node Creation Time: {time.time() - batch_folder_create_start_time}')
+        logger.info(f'New Folders saved: {len(to_create_items)}')
+        logger.info(f'New Node Creation Time: {time.time() - batch_folder_create_start_time}')
 
-    except Exception as e:
-        __logger.error(f'Error when create the folder tree: {e}')
-        raise e
+    except Exception:
+        logger.exception('Error when create the folder tree')
+        raise
 
-    __logger.info('[SUCCEED] Done')
+    logger.info('[SUCCEED] Done')
 
     return to_create_items, data
 

@@ -1,6 +1,7 @@
-# Copyright (C) 2022-2023 Indoc Systems
+# Copyright (C) 2022-Present Indoc Systems
 #
-# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE, Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
+# Licensed under the GNU AFFERO GENERAL PUBLIC LICENSE,
+# Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
 import tarfile
@@ -13,20 +14,11 @@ from typing import List
 
 import py7zr
 import rarfile
-from common import LoggerFactory
 from fastapi.concurrency import run_in_threadpool
 from magic import Magic
 
-from app.config import ConfigClass
+from app.logger import logger
 from app.resources.archive_file_type_mapping import FILES_MIMETYPE
-
-logger = LoggerFactory(
-    'helpers',
-    level_default=ConfigClass.LEVEL_DEFAULT,
-    level_file=ConfigClass.LEVEL_FILE,
-    level_stdout=ConfigClass.LEVEL_STDOUT,
-    level_stderr=ConfigClass.LEVEL_STDERR,
-).get_logger()
 
 
 class ArchiveFile(metaclass=ABCMeta):
