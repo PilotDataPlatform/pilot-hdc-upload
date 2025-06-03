@@ -19,7 +19,7 @@ async def data_ops_request(resource_key: str, operation: str, method: str) -> di
     async with httpx.AsyncClient() as client:
         response = await client.request(url=url, method=method, json=post_json, timeout=3600)
     if response.status_code != 200:
-        raise ResourceAlreadyInUsed('resource %s already in used' % resource_key)
+        raise ResourceAlreadyInUsed(f'resource {resource_key} already in used')
 
     return response.json()
 
@@ -40,6 +40,6 @@ def bulk_lock_operation(resource_key: list, operation: str, lock=True) -> dict:
     with httpx.Client() as client:
         response = client.request(method, url, json=post_json, timeout=3600)
     if response.status_code != 200:
-        raise ResourceAlreadyInUsed('resource %s already in used' % resource_key)
+        raise ResourceAlreadyInUsed(f'resource {resource_key} already in used')
 
     return response.json()

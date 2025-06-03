@@ -30,7 +30,7 @@ class FolderMgr:
         self.zone = ConfigClass.namespace
 
     async def create(self, creator: str, current_folder: str, parent_folder_id: str):
-        """create folder nodes and connect them to the parent."""
+        """Create folder nodes and connect them to the parent."""
         try:
             #
             to_create_path = (self.relative_path + '/').replace(current_folder + '/', '')
@@ -118,7 +118,7 @@ class FolderNode:
             await redis_srv.set_by_key(obj_path, json.dumps(self.__dict__))
 
     async def read_from_cache(self, folder_relative_path, folder_name, project_code, zone):
-        """read created nodes in the cache."""
+        """Read created nodes in the cache."""
 
         obj_path = os.path.join(zone, project_code, folder_relative_path, folder_name)
         found = await redis_srv.get_by_key(obj_path)

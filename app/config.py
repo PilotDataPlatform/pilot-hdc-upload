@@ -7,7 +7,6 @@
 import logging
 from functools import lru_cache
 from typing import Any
-from typing import Dict
 
 from common import VaultClient
 from pydantic import BaseSettings
@@ -20,7 +19,7 @@ SRV_NAMESPACE = config('APP_NAME', cast=str, default='service_upload')
 CONFIG_CENTER_ENABLED = config('CONFIG_CENTER_ENABLED', cast=str, default='false')
 
 
-def load_vault_settings(settings: BaseSettings) -> Dict[str, Any]:
+def load_vault_settings(settings: BaseSettings) -> dict[str, Any]:
     if CONFIG_CENTER_ENABLED == 'false':
         return {}
     else:

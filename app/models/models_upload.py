@@ -5,7 +5,6 @@
 # You may not use this file except in compliance with the License.
 
 from enum import Enum
-from typing import List
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -29,7 +28,7 @@ class PreUploadPOST(BaseModel):
     project_code: str
     operator: str
     job_type: str = 'AS_FOLDER | AS_FILE'
-    data: List[SingleFileForm]
+    data: list[SingleFileForm]
     current_folder_node: str = ''
     parent_folder_id: str
     incremental = False
@@ -61,7 +60,7 @@ class PreUploadResponse(APIResponse):
 
 
 class ChunkUploadPOST(BaseModel):
-    """chunk upload payload model."""
+    """Chunk upload payload model."""
 
     project_code: str
     operator: str
@@ -70,18 +69,18 @@ class ChunkUploadPOST(BaseModel):
     resumable_chunk_number: int
     resumable_total_chunks: int
     resumable_total_size: float
-    tags: List[str] = []
+    tags: list[str] = []
     metadatas: dict = None
 
 
 class ChunkUploadResponse(APIResponse):
-    """chunk upload response class."""
+    """Chunk upload response class."""
 
     result: dict = Field({}, example={'msg': 'Succeed'})
 
 
 class OnSuccessUploadPOST(BaseModel):
-    """merge chunks payload model."""
+    """Merge chunks payload model."""
 
     project_code: str
     operator: str
@@ -92,7 +91,7 @@ class OnSuccessUploadPOST(BaseModel):
     resumable_relative_path: str
     resumable_total_chunks: int
     resumable_total_size: float
-    tags: List[str] = []
+    tags: list[str] = []
     metadatas: dict = None
     process_pipeline: str = None
     from_parents: list = None
@@ -100,7 +99,7 @@ class OnSuccessUploadPOST(BaseModel):
 
 
 class POSTCombineChunksResponse(APIResponse):
-    """get Job status response class."""
+    """Get Job status response class."""
 
     result: dict = Field(
         {},
