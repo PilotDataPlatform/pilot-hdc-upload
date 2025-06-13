@@ -118,6 +118,7 @@ class KakfaProducer:
             'user': operator,
             'imported_from': '',
             'changes': [],
+            'network_origin': 'unknown',
         }
 
         byte_message = await self._validate_message(schema_name, message)

@@ -68,6 +68,10 @@
           "values": "string"
         }
       }
+    },
+    {
+      "name": "network_origin",
+      "type": "string"
     }
   ]
 }
