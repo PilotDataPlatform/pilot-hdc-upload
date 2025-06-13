@@ -46,7 +46,7 @@ class SrvAioRedisSingleton:
         return await self.__instance.set(key, content, ex=expire_time)
 
     async def mget_by_prefix(self, prefix: str):
-        query = '{}:*'.format(prefix)
+        query = f'{prefix}:*'
         keys = await self.__instance.keys(query)
         return await self.__instance.mget(keys)
 
@@ -58,7 +58,7 @@ class SrvAioRedisSingleton:
 
     async def mdelete_by_prefix(self, prefix: str):
         logger.debug(prefix)
-        query = '{}:*'.format(prefix)
+        query = f'{prefix}:*'
         keys = await self.__instance.keys(query)
         for key in keys:
             await self.__instance.delete(key)

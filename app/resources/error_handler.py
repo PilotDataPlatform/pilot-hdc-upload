@@ -78,7 +78,7 @@ class ECustomizedError(enum.Enum):
 
 
 def customized_error_template(customized_error: ECustomizedError):
-    """get error template."""
+    """Get error template."""
     return {
         'FILE_NOT_FOUND': '[File not found] %s.',
         'INVALID_FILE_AMOUNT': '[Invalid file amount] must greater than 0',

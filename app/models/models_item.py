@@ -20,4 +20,4 @@ class ItemStatus(str, Enum):
     ARCHIVED = 'ARCHIVED'
 
     def __str__(self):
-        return '%s' % self.name
+        return f'{self.name}'

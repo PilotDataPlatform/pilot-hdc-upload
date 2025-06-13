@@ -9,8 +9,6 @@ import zipfile
 from abc import ABCMeta
 from abc import abstractmethod
 from typing import Any
-from typing import Dict
-from typing import List
 
 import py7zr
 import rarfile
@@ -107,7 +105,7 @@ class ZipFile(ArchiveFile):
 
 
 class Archive:
-    def __init__(self, file_list: List[ArchiveFile]):
+    def __init__(self, file_list: list[ArchiveFile]):
         self.file_list = file_list
 
     def get_structure(self):
@@ -132,7 +130,7 @@ class Archive:
         return results
 
 
-def read_tar(file_path: str) -> Dict[str, Any]:
+def read_tar(file_path: str) -> dict[str, Any]:
     try:
         with tarfile.open(file_path, mode='r:*') as archive_files:
             archive = Archive([TarFile(file) for file in archive_files])
@@ -142,7 +140,7 @@ def read_tar(file_path: str) -> Dict[str, Any]:
         return {'Error: The file is not a valid 7z file': ''}
 
 
-def read_7z(file_path: str) -> Dict[str, Any]:
+def read_7z(file_path: str) -> dict[str, Any]:
     try:
         with py7zr.SevenZipFile(file_path, 'r') as archive_files:
             archive = Archive([SevenZipFile(file) for file in archive_files.files])
@@ -152,7 +150,7 @@ def read_7z(file_path: str) -> Dict[str, Any]:
         return {'Error: The file is not a valid 7z file': ''}
 
 
-def read_zip(file_path: str) -> Dict[str, Any]:
+def read_zip(file_path: str) -> dict[str, Any]:
     try:
         with zipfile.ZipFile(file_path, 'r') as archive_files:
             archive = Archive([ZipFile(file) for file in archive_files.infolist()])
@@ -162,7 +160,7 @@ def read_zip(file_path: str) -> Dict[str, Any]:
         return {'Error: The file is not a valid zip file': ''}
 
 
-def read_rar(file_path: str) -> Dict[str, Any]:
+def read_rar(file_path: str) -> dict[str, Any]:
     try:
         with rarfile.RarFile(file_path, 'r') as archive_files:
             archive = Archive([RarFile(file) for file in archive_files.infolist()])

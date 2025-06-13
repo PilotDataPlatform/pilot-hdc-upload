@@ -4,8 +4,6 @@
 # Version 3.0 (the "License") available at https://www.gnu.org/licenses/agpl-3.0.en.html.
 # You may not use this file except in compliance with the License.
 
-from typing import List
-
 from pydantic import BaseModel
 
 from .base_models import APIResponse
@@ -20,7 +18,7 @@ class ResumableUploadPOST(BaseModel):
     """Pre upload payload model."""
 
     bucket: str
-    object_infos: List[ObjectInfo]
+    object_infos: list[ObjectInfo]
 
 
 class ResumableUploadGET(BaseModel):

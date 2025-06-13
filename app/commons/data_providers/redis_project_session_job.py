@@ -7,7 +7,6 @@
 import json
 import time
 from enum import Enum
-from typing import List
 
 import httpx
 
@@ -24,7 +23,7 @@ class EFileStatus(Enum):
     CHUNK_UPLOADED = 4
 
     def __str__(self):
-        return '%s' % self.name
+        return f'{self.name}'
 
 
 class SessionJob:
@@ -46,28 +45,28 @@ class SessionJob:
         self.payload = {}
 
     async def set_job_id(self, job_id):
-        """set job id."""
+        """Set job id."""
         self.job_id = job_id
 
     def set_source(self, target_names: str):
-        """set job target file."""
+        """Set job target file."""
         self.target_names = target_names
 
     def add_payload(self, key: str, value):
-        """will update if exists the same key."""
+        """Will update if exists the same key."""
         self.payload[key] = value
 
     async def set_status(self, status: str):
-        """set job status."""
+        """Set job status."""
         self.status = status
         return await self.save()
 
     def set_progress(self, progress: int):
-        """set job status."""
+        """Set job status."""
         self.progress = progress
 
     async def save(self):
-        """save in redis."""
+        """Save in redis."""
         if not self.job_id:
             raise (Exception('[SessionJob] job_id not provided'))
         if not self.target_names:
@@ -85,21 +84,28 @@ class SessionJob:
         )
 
     async def read(self):
-        """read from redis."""
+        """Read from redis."""
         fetched = await session_job_get_status(
             self.session_id, self.project_code, 'project', action_type=self.action, job_id=self.job_id
         )
         if not fetched:
-            raise Exception('[SessionJob] Not found job: {}'.format(self.job_id))
+            raise Exception(f'[SessionJob] Not found job: {self.job_id}')
         job_read = fetched[-1]
         self.target_names = job_read.get('target_names', None)
         self.status = job_read.get('status', EFileStatus.WAITING)
         self.payload = job_read.get('payload', {})
 
     def get_kv_entity(self):
-        """get redis key value pair return key, value, job_dict."""
-        my_key = 'dataaction:{}:Container:{}:{}:{}:{}:{}'.format(
-            self.session_id, self.job_id, self.action, self.project_code, self.operator, self.target_names
+        """Get redis key value pair return key, value, job_dict."""
+        my_key = (
+            f'dataaction'
+            f':{self.session_id}'
+            f':Container'
+            f':{self.job_id}'
+            f':{self.action}'
+            f':{self.project_code}'
+            f':{self.operator}'
+            f':{self.target_names}'
         )
         record = {
             'session_id': self.session_id,
@@ -126,7 +132,7 @@ async def get_fsm_object(session_id: str, project_code: str, operator: str, job_
 
 
 async def session_job_set_status(
-    target_names: List[str],
+    target_names: list[str],
     container_code: str,
     container_type: str,
     status: EFileStatus,
@@ -177,9 +183,9 @@ async def session_job_get_status(
     container_code: str,
     container_type: str,
     action_type: str = _JOB_TYPE,
-    target_names: List[str] = None,
+    target_names: list[str] = None,
     job_id: str = None,
-) -> List[dict]:
+) -> list[dict]:
     """
     Summary:
         The function will fetch the existing job from redis by the input.

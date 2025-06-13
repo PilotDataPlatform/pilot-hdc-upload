@@ -10,7 +10,6 @@ import os
 import shutil
 import time
 import unicodedata as ud
-from typing import Optional
 from uuid import uuid4
 
 import httpx
@@ -129,7 +128,7 @@ class APIUpload:
         self,
         request_payload: PreUploadPOST,
         session_id=Header(None),
-        Authorization: Optional[str] = Header(None),
+        Authorization: str | None = Header(None),
     ):
         """
         Summary:
@@ -172,7 +171,7 @@ class APIUpload:
             or request_payload.job_type == EUploadJobType.AS_FOLDER.name
         ):
             _res.code = EAPIResponseCode.bad_request
-            _res.error_msg = 'Invalid job type: {}'.format(request_payload.job_type)
+            _res.error_msg = f'Invalid job type: {request_payload.job_type}'
             return _res.json_response()
 
         try:
@@ -214,7 +213,7 @@ class APIUpload:
                 if item_res.status_code == 409:
                     raise ResourceAlreadyExist(f'The resource already exist: {item_res.text}')
                 elif item_res.status_code != 200:
-                    raise Exception('Fail to create metadata %s in postgres: %s' % (to_create_items, item_res.text))
+                    raise Exception(f'Fail to create metadata {to_create_items} in postgres: {item_res.text}')
 
             for item in item_list:
                 await status_mgr.set_job_id(str(uuid4()))
@@ -365,8 +364,8 @@ class APIUpload:
         request_payload: OnSuccessUploadPOST,
         background_tasks: BackgroundTasks,
         session_id: str = Header(None),
-        Authorization: Optional[str] = Header(None),
-        refresh_token: Optional[str] = Header(None),
+        Authorization: str | None = Header(None),
+        refresh_token: str | None = Header(None),
     ):
         """
         Summary:
@@ -576,7 +575,7 @@ async def finalize_worker(
         data = {
             'status': ItemStatus.ACTIVE,
             'size': request_payload.resumable_total_size,
-            'location_uri': 'minio://%s/%s/%s' % (ConfigClass.S3_INTERNAL, bucket, obj_path),
+            'location_uri': f'minio://{ConfigClass.S3_INTERNAL}/{bucket}/{obj_path}',
             'version': version_id,
             'tags': request_payload.tags,
         }
@@ -586,7 +585,7 @@ async def finalize_worker(
                 ConfigClass.METADATA_SERVICE + 'item/', params={'id': item_id}, json=data, timeout=10
             )
             if response.status_code != 200:
-                raise Exception('Fail to create metadata in postgres: %s' % (response.__dict__))
+                raise Exception('Fail to create metadata in postgres')
 
         created_entity = response.json().get('result')
         file_id = item_id
@@ -612,7 +611,7 @@ async def finalize_worker(
 
         kp = await get_kafka_producer()
         await kp.create_activity_log(
-            created_entity, 'metadata_items_activity.avsc', operator, ConfigClass.KAFKA_ACTIVITY_TOPIC
+            created_entity, 'metadata.items.activity.avsc', operator, ConfigClass.KAFKA_ACTIVITY_TOPIC
         )
 
         status_mgr.add_payload('source_geid', created_entity.get('id'))
@@ -620,7 +619,7 @@ async def finalize_worker(
         logger.info('Upload Job Done.')
 
     except FileNotFoundError as e:
-        error_msg = 'folder {} is already empty: {}'.format(temp_dir, str(e))
+        error_msg = f'folder {temp_dir} is already empty: {str(e)}'
         logger.error(error_msg)
         status_mgr.add_payload('error_msg', str(error_msg))
         await status_mgr.set_status(EFileStatus.FAILED)
@@ -719,7 +718,7 @@ async def get_conflict_file_paths(data, project_code):
 
 
 def response_conflic_folder_file_names(_res, conflict_file_paths, conflict_folder_paths):
-    """set conflict response when filename or folder name conflics."""
+    """Set conflict response when filename or folder name conflics."""
     if len(conflict_file_paths) > 0:
         _res.code = EAPIResponseCode.conflict
         _res.error_msg = customized_error_template(ECustomizedError.INVALID_FILENAME)

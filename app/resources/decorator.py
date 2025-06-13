@@ -28,7 +28,7 @@ def header_enforcement(required_headers: list):
 
             for header in required_headers:
                 if not kwargs.get(header):
-                    raise HeaderMissingException('%s is required' % header)
+                    raise HeaderMissingException(f'{header} is required')
 
             return await func(*arg, **kwargs)
 
