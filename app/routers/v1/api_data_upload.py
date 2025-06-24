@@ -19,9 +19,11 @@ from common.object_storage_adaptor.boto3_client import TokenError
 from common.object_storage_adaptor.boto3_client import get_boto3_client
 from fastapi import APIRouter
 from fastapi import BackgroundTasks
+from fastapi import Depends
 from fastapi import File
 from fastapi import Form
 from fastapi import Header
+from fastapi import Request
 from fastapi import UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi_utils import cbv
@@ -30,6 +32,7 @@ from app.commons.data_providers.redis_project_session_job import EFileStatus
 from app.commons.data_providers.redis_project_session_job import SessionJob
 from app.commons.data_providers.redis_project_session_job import get_fsm_object
 from app.commons.kafka_producer import get_kafka_producer
+from app.components.request.network import Network
 from app.config import ConfigClass
 from app.logger import logger
 from app.models.base_models import APIResponse
@@ -57,6 +60,12 @@ router = APIRouter()
 _API_TAG = 'V1 Upload'
 _API_NAMESPACE = 'api_data_upload'
 _JOB_TYPE = 'data_upload'
+
+
+def get_network(request: Request) -> Network:
+    """Get network from the request headers."""
+
+    return Network.from_headers(request.headers)
 
 
 @cbv.cbv(router)
@@ -366,6 +375,7 @@ class APIUpload:
         session_id: str = Header(None),
         Authorization: str | None = Header(None),
         refresh_token: str | None = Header(None),
+        network: Network = Depends(get_network),
     ):
         """
         Summary:
@@ -411,6 +421,7 @@ class APIUpload:
             request_payload,
             status_mgr,
             self.boto3_client,
+            network.origin,
         )
 
         logger.info('finalize_worker started')
@@ -502,6 +513,7 @@ async def finalize_worker(
     request_payload: OnSuccessUploadPOST,
     status_mgr: SessionJob,
     boto3_client,
+    network_origin: str,
 ):
     """
     Summary:
@@ -611,7 +623,7 @@ async def finalize_worker(
 
         kp = await get_kafka_producer()
         await kp.create_activity_log(
-            created_entity, 'metadata.items.activity.avsc', operator, ConfigClass.KAFKA_ACTIVITY_TOPIC
+            created_entity, 'metadata.items.activity.avsc', operator, ConfigClass.KAFKA_ACTIVITY_TOPIC, network_origin
         )
 
         status_mgr.add_payload('source_geid', created_entity.get('id'))
