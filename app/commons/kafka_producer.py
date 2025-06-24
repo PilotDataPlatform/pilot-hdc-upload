@@ -87,7 +87,9 @@ class KakfaProducer:
 
         return message
 
-    async def create_activity_log(self, source_node: dict, schema_name: str, operator: str, topic: str):
+    async def create_activity_log(
+        self, source_node: dict, schema_name: str, operator: str, topic: str, network_origin: str
+    ):
         """
         Summary:
             the function will validate the dict message with specified schema
@@ -118,7 +120,7 @@ class KakfaProducer:
             'user': operator,
             'imported_from': '',
             'changes': [],
-            'network_origin': 'unknown',
+            'network_origin': network_origin,
         }
 
         byte_message = await self._validate_message(schema_name, message)
