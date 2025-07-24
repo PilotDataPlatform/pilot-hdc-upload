@@ -6,32 +6,16 @@
 
 import logging
 from functools import lru_cache
-from typing import Any
 
-from common import VaultClient
 from pydantic import BaseSettings
 from pydantic import Extra
-from starlette.config import Config
-
-config = Config('.env')
-
-SRV_NAMESPACE = config('APP_NAME', cast=str, default='service_upload')
-CONFIG_CENTER_ENABLED = config('CONFIG_CENTER_ENABLED', cast=str, default='false')
-
-
-def load_vault_settings(settings: BaseSettings) -> dict[str, Any]:
-    if CONFIG_CENTER_ENABLED == 'false':
-        return {}
-    else:
-        vc = VaultClient(config('VAULT_URL'), config('VAULT_CRT'), config('VAULT_TOKEN'))
-        return vc.get_from_vault(SRV_NAMESPACE)
 
 
 class Settings(BaseSettings):
     """Store service configuration settings."""
 
     APP_NAME: str = 'service_upload'
-    VERSION: str = '2.2.6'
+    VERSION: str = '2.2.14'
     HOST: str = '127.0.0.1'
     PORT: int = 5079
     WORKERS: int = 1
@@ -78,10 +62,6 @@ class Settings(BaseSettings):
         env_file = '.env'
         env_file_encoding = 'utf-8'
         extra = Extra.allow
-
-        @classmethod
-        def customise_sources(cls, init_settings, env_settings, file_secret_settings):
-            return env_settings, load_vault_settings, init_settings, file_secret_settings
 
     def __init__(self) -> None:
         super().__init__()
