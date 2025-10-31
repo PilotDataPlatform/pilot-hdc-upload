@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     """Store service configuration settings."""
 
     APP_NAME: str = 'service_upload'
-    VERSION: str = '2.2.14'
+    VERSION: str = '2.2.15'
     HOST: str = '127.0.0.1'
     PORT: int = 5079
     WORKERS: int = 1
