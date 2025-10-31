@@ -84,6 +84,7 @@ class APIResumableUpload:
             chunk_info = await get_chunks_info(self.boto3_client, request_payload.bucket, request_payload.object_infos)
             api_response.result = chunk_info
         except Exception as e:
+            logger.exception('An exception occurred while retrieving the uploaded parts')
             raise NotFound(str(e))
 
         return api_response.json_response()
