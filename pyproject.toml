@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "service_upload"
-version = "2.2.15"
+version = "2.2.16"
 description = ""
 authors = ["Indoc Research"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.11"
 fastapi-utils = "0.2.1"
 uvicorn = "0.30.6"
 uvloop = "0.20.0"
@@ -29,7 +29,7 @@ fastapi-health = "^0.4.0"
 py7zr = "^0.20.2"
 rarfile = "^4.0"
 python-magic = "^0.4.27"
-pilot-platform-common = "0.3.0"
+pilot-platform-common = "0.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "7.1.2"
