@@ -184,6 +184,11 @@ class APIUpload:
             return _res.json_response()
 
         try:
+            logger.audit(
+                'Preparing job list for upload.',
+                container_code=project_code,
+                username=request_payload.operator,
+            )
             _ = await self.project_client.get(code=request_payload.project_code)
 
             for upload_data in request_payload.data:
@@ -236,7 +241,11 @@ class APIUpload:
                 job_list.append(job_recorded)
 
             _res.result = job_list
-
+            logger.audit(
+                'Successfully prepared job list for upload.',
+                container_code=project_code,
+                username=request_payload.operator,
+            )
         except (TokenError, InvalidPayload) as e:
             _res.error_msg = str(e)
             _res.code = EAPIResponseCode.bad_request
@@ -250,6 +259,11 @@ class APIUpload:
             _res.code = EAPIResponseCode.conflict
 
         except Exception as e:
+            logger.audit(
+                'Received an unexpected error while preparing job list for upload.',
+                container_code=project_code,
+                username=request_payload.operator,
+            )
             _res.error_msg = 'Error when pre uploading ' + str(e)
             _res.code = EAPIResponseCode.internal_error
 
@@ -423,7 +437,12 @@ class APIUpload:
             self.boto3_client,
             network.origin,
         )
-
+        logger.audit(
+            'Successfully submitted a task for combining uploaded chunks.',
+            username=request_payload.operator,
+            container_code=request_payload.project_code,
+            job_id=request_payload.job_id,
+        )
         logger.info('finalize_worker started')
         job_recorded = await status_mgr.set_status(EFileStatus.CHUNK_UPLOADED)
         _res.code = EAPIResponseCode.success
@@ -564,7 +583,12 @@ async def finalize_worker(
     logger.warning(f'prepare time is {pre_time - start_time}')
 
     try:
-
+        logger.audit(
+            'Preparing uploaded chunks.',
+            file_name=file_name,
+            username=operator,
+            container_code=project_code,
+        )
         logger.info('Start to create folder trees')
 
         s3_parts_info = await boto3_client.list_chunks(bucket, obj_path, resumable_identifier)
@@ -629,7 +653,12 @@ async def finalize_worker(
         status_mgr.add_payload('source_geid', created_entity.get('id'))
         await status_mgr.set_status(EFileStatus.SUCCEED)
         logger.info('Upload Job Done.')
-
+        logger.audit(
+            'Successfully managed to combine uploaded chunks.',
+            file_name=file_name,
+            username=operator,
+            container_code=project_code,
+        )
     except FileNotFoundError as e:
         error_msg = f'folder {temp_dir} is already empty: {str(e)}'
         logger.error(error_msg)
@@ -637,6 +666,12 @@ async def finalize_worker(
         await status_mgr.set_status(EFileStatus.FAILED)
 
     except Exception as exce:
+        logger.audit(
+            'Received an unexpected error while attempting to combine uploaded chunks.',
+            file_name=file_name,
+            username=operator,
+            container_code=project_code,
+        )
         logger.error(f'Fail with error: {exce}')
         status_mgr.add_payload('error_msg', str(exce))
         await status_mgr.set_status(EFileStatus.FAILED)
