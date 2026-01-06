@@ -22,8 +22,7 @@ async def get_chunks_info(boto3_client, bucket, object_infos: list[ObjectInfo]) 
                     f'with upload ID "{obj_info.resumable_id}" does not exist.'
                 )
                 continue
-            else:
-                raise e
+            raise
 
         s3_parts_info = {x.get('PartNumber'): x.get('ETag').replace("\"", '') for x in s3_parts_res.get('Parts', [])}
 

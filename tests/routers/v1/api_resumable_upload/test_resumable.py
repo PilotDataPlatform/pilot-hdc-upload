@@ -44,7 +44,7 @@ async def test_resumable_success_return_400(test_async_client, mocker):
         AssertionError()
 
 
-async def test_get_chunks_info_skips_chunks_that_does_not_exist(mocker, fake):
+async def test_get_chunks_info_skips_chunks_that_do_not_exist(mocker, fake):
     object_infos = [
         ObjectInfo(object_path=fake.file_path(depth=3), resumable_id=fake.pystr(min_chars=50, max_chars=50))
         for _ in range(2)
