@@ -207,3 +207,8 @@ def mock_redis(monkeypatch):
 
     monkeypatch.setattr(SrvAioRedisSingleton, 'set_by_key', lambda x, y, z: fake_set(y, z))
     monkeypatch.setattr(SrvAioRedisSingleton, 'get_by_key', lambda x, y: fake_get(y))
+
+
+pytest_plugins = [
+    'tests.fixtures.fake',
+]

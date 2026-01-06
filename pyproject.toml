@@ -39,6 +39,7 @@ pytest-mock = "^3.7.0"
 pytest-httpx = "^0.21.0"
 flake8 = "^4.0.1"
 async-asgi-testclient = "^1.4.9"
+Faker = "40.1.0"
 
 [tool.pytest.ini_options]
 testpaths = "tests"
