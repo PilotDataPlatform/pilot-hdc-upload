@@ -33,6 +33,6 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: PilotDataPlatform/pilot-hdc-ci-tools/.github/workflows/update_gitops_versions.yml@main
     with:
-      service_key: project-service
+      service_key: upload-service
       image_tag: ${{ needs.build_and_publish_hdc.outputs.app_version }}
     secrets: inherit
